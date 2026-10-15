@@ -1,6 +1,97 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script>
+  /* Google Analytics 4 : chargement uniquement après consentement explicite. */
+  (function () {
+    'use strict';
+    const measurementId = 'G-P8GX8Y647N';
+    const consentKey = 'alexred_analytics_consent_v1';
+    let started = false;
+    let banner = null;
+
+    function startAnalytics() {
+      if (started) return;
+      started = true;
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('js', new Date());
+      window.gtag('config', measurementId);
+      const tag = document.createElement('script');
+      tag.async = true;
+      tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(measurementId);
+      document.head.appendChild(tag);
+    }
+
+    function eraseAnalyticsCookies() {
+      document.cookie.split(';').forEach(function (item) {
+        const name = item.trim().split('=')[0];
+        if (/^_ga(?:_|$)/.test(name)) {
+          document.cookie = name + '=; Max-Age=0; path=/; SameSite=Lax';
+        }
+      });
+    }
+
+    function setChoice(accepted) {
+      try { localStorage.setItem(consentKey, accepted ? 'accepted' : 'refused'); }
+      catch (error) { /* Sans stockage local, le choix sera redemandé. */ }
+      if (banner) { banner.remove(); banner = null; }
+      if (accepted) startAnalytics();
+      else {
+        eraseAnalyticsCookies();
+        if (started) location.reload();
+      }
+    }
+
+    function showChoices() {
+      if (banner) return;
+      banner = document.createElement('section');
+      banner.setAttribute('role', 'region');
+      banner.setAttribute('aria-label', 'Choix des statistiques de fréquentation');
+      banner.style.cssText = 'position:fixed;bottom:16px;left:16px;right:16px;max-width:620px;margin:0 auto;padding:20px;background:#12263d;color:#fff;border:1px solid #d3a766;border-radius:12px;z-index:99999;box-shadow:0 8px 32px #0006;font:14px/1.6 Arial,sans-serif;';
+      banner.innerHTML = '<strong style="display:block;font-size:16px;margin-bottom:8px">Statistiques de fréquentation</strong>' +
+        '<p style="margin:0 0 12px">Avec votre accord, ce site utilise Google Analytics pour mesurer les visites, leur provenance et les clics sur le CV et les liens de contact. Aucun suivi Google Analytics n’est chargé si vous refusez.</p>' +
+        '<p style="margin:0 0 15px;font-size:12px">Vous pouvez modifier votre choix à tout moment via « Gestion des statistiques ». <a href="https://policies.google.com/privacy?hl=fr" target="_blank" rel="noopener noreferrer" style="color:#f4ce92;text-decoration:underline">Confidentialité de Google</a>.</p>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:10px"><button type="button" data-consent="refuse" style="padding:10px 18px;background:transparent;color:#fff;border:1px solid #d3a766;border-radius:6px;cursor:pointer">Refuser</button>' +
+        '<button type="button" data-consent="accept" style="padding:10px 18px;background:#d3a766;color:#152033;border:1px solid #d3a766;border-radius:6px;cursor:pointer;font-weight:bold">Accepter</button></div>';
+      banner.querySelector('[data-consent="refuse"]').addEventListener('click', function () { setChoice(false); });
+      banner.querySelector('[data-consent="accept"]').addEventListener('click', function () { setChoice(true); });
+      document.body.appendChild(banner);
+    }
+
+    function init() {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.textContent = 'Gestion des statistiques';
+      control.setAttribute('aria-label', 'Modifier mon choix concernant les statistiques');
+      control.style.cssText = 'position:fixed;right:12px;bottom:10px;z-index:99998;background:#12263d;color:white;border:1px solid #d3a766;border-radius:7px;padding:7px 10px;font:12px Arial,sans-serif;cursor:pointer;';
+      control.addEventListener('click', showChoices);
+      document.body.appendChild(control);
+
+      let saved = null;
+      try { saved = localStorage.getItem(consentKey); } catch (error) { /* stockage indisponible */ }
+      if (saved === 'accepted') startAnalytics();
+      else if (saved !== 'refused') showChoices();
+
+      document.addEventListener('click', function (event) {
+        if (!started || typeof window.gtag !== 'function') return;
+        const anchor = event.target.closest('a[href]');
+        if (!anchor) return;
+        const href = anchor.getAttribute('href') || '';
+        if (/\.pdf(?:[?#]|$)/i.test(href)) {
+          window.gtag('event', 'cv_download_click', { link_text: anchor.textContent.trim(), file_name: 'CV_Alexandre_Redon.pdf.pdf' });
+        } else if (/^mailto:/i.test(href)) {
+          window.gtag('event', 'email_contact_click', { link_text: anchor.textContent.trim() });
+        } else if (/linkedin\.com/i.test(href)) {
+          window.gtag('event', 'linkedin_profile_click', { link_text: anchor.textContent.trim() });
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Alexandre Redon, manager commercial B2B à Toulouse : chef des ventes, responsable commercial régional, développement et animation de réseaux, management terrain et distribution.">
